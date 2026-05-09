@@ -3,104 +3,105 @@
 import { StampButton } from "@/components/StampButton";
 
 type ResultPanelProps = {
-  originalPreviewUrl: string | null;
   resultDataUrl: string | null;
   downloadFileName: string;
   loading?: boolean;
   error?: string | null;
   onGenerate: () => void;
   canGenerate: boolean;
+  hasUpload: boolean;
 };
 
 export function ResultPanel({
-  originalPreviewUrl,
   resultDataUrl,
   downloadFileName,
   loading,
   error,
   onGenerate,
   canGenerate,
+  hasUpload,
 }: ResultPanelProps) {
+  const showResult = Boolean(resultDataUrl);
+
   return (
-    <section className="mt-8 min-w-0 space-y-6" aria-live="polite">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h2 className="font-serif text-2xl font-semibold text-ink">Exhibits A &amp; F</h2>
-          <p className="mt-1 font-sans text-sm text-dossier">Original · Government exhibit energy</p>
-        </div>
-        <StampButton
-          loading={loading}
-          disabled={!canGenerate}
-          onClick={onGenerate}
-        >
-          Generate Courtroom Sketch
-        </StampButton>
+    <article
+      className="relative flex min-w-0 flex-col rounded-2xl border border-margin/45 bg-white/65 p-4 shadow-dossier paper-grain"
+      aria-live="polite"
+    >
+      <div className="flex items-center justify-between gap-3">
+        <h3 className="font-sans text-xs font-bold uppercase tracking-[0.2em] text-dossier">
+          Exhibit F
+        </h3>
+        <span className="rounded-md bg-paper px-2 py-0.5 font-mono text-[10px] text-stamp">
+          {showResult ? "SKETCH" : loading ? "IN PROGRESS" : "PENDING"}
+        </span>
       </div>
+
+      <div className="relative mt-3 flex aspect-[4/5] w-full items-center justify-center overflow-hidden rounded-xl border border-margin/60 bg-paper/45">
+        {showResult ? (
+          /* eslint-disable-next-line @next/next/no-img-element */
+          <img
+            src={resultDataUrl ?? undefined}
+            alt="Generated courtroom sketch"
+            className="h-full w-full object-contain"
+          />
+        ) : loading ? (
+          <div className="flex flex-col items-center gap-3 px-6 text-center">
+            <span
+              className="inline-block size-9 animate-spin rounded-full border-[3px] border-ink/15 border-t-stamp"
+              aria-hidden
+            />
+            <p className="font-sans text-xs text-dossier">
+              The artist is rushing, smudging, and making questionable choices…
+            </p>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center gap-4 px-6 text-center">
+            <p className="font-sans text-xs text-dossier">
+              {hasUpload
+                ? "Ready when you are."
+                : "Upload a photograph in Exhibit A to begin."}
+            </p>
+            <StampButton
+              loading={false}
+              disabled={!canGenerate}
+              onClick={onGenerate}
+            >
+              Generate Courtroom Sketch
+            </StampButton>
+          </div>
+        )}
+      </div>
+
+      {showResult ? (
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+          <a
+            href={resultDataUrl ?? undefined}
+            download={downloadFileName}
+            className="inline-flex items-center justify-center rounded-lg border border-margin bg-white px-3 py-1.5 font-sans text-xs font-semibold text-ink shadow-sm transition hover:border-washblue/55 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stamp"
+          >
+            Download exhibit
+          </a>
+          <button
+            type="button"
+            onClick={onGenerate}
+            disabled={!canGenerate}
+            className="inline-flex items-center justify-center rounded-lg border border-margin/60 bg-paper px-3 py-1.5 font-sans text-xs font-semibold text-dossier transition hover:border-washblue/55 hover:text-ink disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            Sketch again
+          </button>
+        </div>
+      ) : null}
 
       {error ? (
         <div
           role="alert"
-          className="rounded-xl border border-stamp/35 bg-stamp/5 px-4 py-3 font-sans text-sm text-ink"
+          className="mt-3 rounded-md border border-stamp/35 bg-stamp/5 px-3 py-2 font-sans text-xs text-ink"
         >
-          <p className="font-semibold text-stamp">Clerk notes</p>
-          <p className="mt-1 text-ink/90">{error}</p>
+          <span className="font-semibold text-stamp">Clerk notes: </span>
+          {error}
         </div>
       ) : null}
-
-      <div className="grid min-w-0 gap-6 md:grid-cols-2">
-        <article className="min-h-0 min-w-0 rounded-2xl border border-margin/45 bg-white/65 p-4 shadow-dossier paper-grain">
-          <div className="flex items-center justify-between gap-3">
-            <h3 className="font-sans text-xs font-bold uppercase tracking-[0.2em] text-dossier">Exhibit A</h3>
-            <span className="rounded-md bg-paper px-2 py-0.5 font-mono text-[10px] text-washblue">ORIGINAL</span>
-          </div>
-          {originalPreviewUrl ? (
-            <div className="mt-4 min-h-0 min-w-0 max-h-[min(30rem,65dvh)] overflow-auto rounded-xl border border-margin/50 bg-paper/45">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={originalPreviewUrl}
-                alt="Original uploaded image"
-                className="mx-auto aspect-auto h-auto max-h-[min(30rem,65dvh)] w-full max-w-full min-h-0 min-w-0 object-contain"
-              />
-            </div>
-          ) : (
-            <p className="mt-6 font-sans text-sm text-dossier">Upload a photo to populate this panel.</p>
-          )}
-        </article>
-
-        <article className="min-h-0 min-w-0 rounded-2xl border border-margin/45 bg-white/65 p-4 shadow-dossier paper-grain">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <h3 className="font-sans text-xs font-bold uppercase tracking-[0.2em] text-dossier">Exhibit F</h3>
-            <span className="rounded-md bg-paper px-2 py-0.5 font-mono text-[10px] text-stamp">SKETCH</span>
-          </div>
-          {resultDataUrl ? (
-            <div className="mt-4 space-y-3">
-              <div className="min-h-0 min-w-0 max-h-[min(30rem,65dvh)] overflow-auto rounded-xl border border-margin/50 bg-paper/45">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={resultDataUrl}
-                  alt="Generated courtroom sketch"
-                  className="mx-auto aspect-auto h-auto max-h-[min(30rem,65dvh)] w-full max-w-full min-h-0 min-w-0 object-contain"
-                />
-              </div>
-              <div className="flex flex-wrap gap-3">
-                <a
-                  href={resultDataUrl}
-                  download={downloadFileName}
-                  className="inline-flex items-center justify-center rounded-lg border border-margin bg-white px-4 py-2 font-sans text-sm font-semibold text-ink shadow-sm transition hover:border-washblue/55 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stamp"
-                >
-                  Download exhibit
-                </a>
-              </div>
-            </div>
-          ) : (
-            <p className="mt-6 font-sans text-sm text-dossier">
-              {loading
-                ? "Hold tight — the artist is rushing, smudging, and making questionable choices…"
-                : "Your masterpiece of procedural chaos will appear here."}
-            </p>
-          )}
-        </article>
-      </div>
-    </section>
+    </article>
   );
 }

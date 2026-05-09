@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { ExhibitChrome } from "@/components/ExhibitChrome";
+import { ResultComparison, type ViewMode } from "@/components/ResultComparison";
 import { ResultPanel } from "@/components/ResultPanel";
 import { UploadPanel } from "@/components/UploadPanel";
 import { prepareImageForUpload } from "@/lib/prepare-image-client";
@@ -23,6 +24,7 @@ export function ExhibitWorkspace() {
   const [preparing, setPreparing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [localMessage, setLocalMessage] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>("slider");
 
   useEffect(() => {
     if (!file) {
@@ -117,21 +119,39 @@ export function ExhibitWorkspace() {
   }, [file, preparing]);
 
   const combinedError = localMessage ?? error;
+  const canGenerate = Boolean(file) && !loading && !preparing;
+  const showComparison = Boolean(resultDataUrl && previewUrl);
 
   return (
     <ExhibitChrome>
-      <div className="space-y-8">
-        <UploadPanel previewUrl={previewUrl} preparing={preparing} onFile={handlePickFile} />
-        <ResultPanel
-          originalPreviewUrl={previewUrl}
-          resultDataUrl={resultDataUrl}
+      {showComparison ? (
+        <ResultComparison
+          viewMode={viewMode}
+          onChangeViewMode={setViewMode}
+          originalUrl={previewUrl as string}
+          resultUrl={resultDataUrl as string}
           downloadFileName={downloadFileName}
+          onUploadFile={handlePickFile}
+          onRegenerate={generate}
+          canRegenerate={canGenerate}
           loading={loading}
+          preparing={preparing}
           error={combinedError}
-          onGenerate={generate}
-          canGenerate={Boolean(file) && !loading && !preparing}
         />
-      </div>
+      ) : (
+        <div className="grid min-w-0 gap-5 md:grid-cols-2 md:gap-6">
+          <UploadPanel previewUrl={previewUrl} preparing={preparing} onFile={handlePickFile} />
+          <ResultPanel
+            resultDataUrl={resultDataUrl}
+            downloadFileName={downloadFileName}
+            loading={loading}
+            error={combinedError}
+            onGenerate={generate}
+            canGenerate={canGenerate}
+            hasUpload={Boolean(previewUrl)}
+          />
+        </div>
+      )}
     </ExhibitChrome>
   );
 }
