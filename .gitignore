@@ -1,4 +1,5 @@
 # dependencies
+node_modules/
 /node_modules
 /.pnp
 .pnp.*
@@ -21,6 +22,9 @@
 # misc
 .DS_Store
 *.pem
+
+# editor / local tooling
+.cursor/
 
 # debug
 npm-debug.log*
