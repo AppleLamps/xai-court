@@ -43,7 +43,7 @@ export function UploadPanel({ previewUrl, preparing, onFile }: UploadPanelProps)
 
   return (
     <article
-      className="relative flex min-w-0 flex-col rounded-2xl border border-margin/45 bg-white/65 p-4 shadow-dossier paper-grain"
+      className="relative flex min-w-0 flex-col rounded-2xl border border-margin/70 bg-white/72 p-4 shadow-dossier paper-grain"
       aria-labelledby={`${inputId}-label`}
     >
       <div className="flex items-center justify-between gap-3">
@@ -72,7 +72,7 @@ export function UploadPanel({ previewUrl, preparing, onFile }: UploadPanelProps)
             open();
           }
         }}
-        className={`group relative mt-3 flex aspect-[4/5] w-full cursor-pointer items-center justify-center overflow-hidden rounded-xl border-2 border-dashed bg-paper/45 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stamp focus-visible:ring-offset-2 focus-visible:ring-offset-paper ${
+        className={`group relative mt-3 flex aspect-[4/5] w-full cursor-pointer items-center justify-center overflow-hidden rounded-xl border-2 border-dashed bg-paper/50 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stamp focus-visible:ring-offset-2 focus-visible:ring-offset-paper ${
           isDragging
             ? "border-stamp/70 bg-stamp/5"
             : hasImage

@@ -17,6 +17,7 @@ export function BeforeAfterSlider({
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState(50);
+  const [dragging, setDragging] = useState(false);
   const draggingRef = useRef(false);
 
   const updateFromClientX = useCallback((clientX: number) => {
@@ -30,6 +31,7 @@ export function BeforeAfterSlider({
     (e: PointerEvent<HTMLDivElement>) => {
       e.currentTarget.setPointerCapture(e.pointerId);
       draggingRef.current = true;
+      setDragging(true);
       updateFromClientX(e.clientX);
     },
     [updateFromClientX],
@@ -45,6 +47,7 @@ export function BeforeAfterSlider({
 
   const onPointerUp = useCallback((e: PointerEvent<HTMLDivElement>) => {
     draggingRef.current = false;
+    setDragging(false);
     if (e.currentTarget.hasPointerCapture(e.pointerId)) {
       e.currentTarget.releasePointerCapture(e.pointerId);
     }
@@ -71,7 +74,9 @@ export function BeforeAfterSlider({
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
-      className="relative aspect-[4/5] w-full select-none touch-none overflow-hidden rounded-2xl border border-margin/60 bg-paper/45 shadow-dossier"
+      className={`group relative aspect-[4/5] w-full cursor-ew-resize select-none touch-none overflow-hidden rounded-2xl border border-margin/70 bg-paper/50 shadow-dossier transition ${
+        dragging ? "ring-2 ring-stamp/35" : ""
+      }`}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
@@ -102,7 +107,12 @@ export function BeforeAfterSlider({
 
       <div
         aria-hidden
-        className="pointer-events-none absolute bottom-0 top-0 w-px bg-paper shadow-[0_0_0_1px_rgba(28,25,22,0.18)]"
+        className="pointer-events-none absolute bottom-0 top-0 w-0.5 -translate-x-1/2 bg-ink/70 shadow-[0_0_0_1px_rgba(244,239,230,0.72),0_0_18px_rgba(28,25,22,0.28)]"
+        style={{ left: `${position}%` }}
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute bottom-4 top-4 w-7 -translate-x-1/2 rounded-full border-x border-paper/70 bg-paper/10 opacity-0 transition group-hover:opacity-100"
         style={{ left: `${position}%` }}
       />
       <div
@@ -112,9 +122,12 @@ export function BeforeAfterSlider({
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={Math.round(position)}
+        aria-valuetext={`${Math.round(position)} percent original photograph visible`}
         aria-orientation="horizontal"
         onKeyDown={onKeyDown}
-        className="absolute top-1/2 z-10 flex size-10 -translate-x-1/2 -translate-y-1/2 cursor-ew-resize items-center justify-center rounded-full border border-margin bg-paper text-ink shadow-md transition hover:scale-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stamp"
+        className={`absolute top-1/2 z-10 flex size-12 -translate-x-1/2 -translate-y-1/2 cursor-ew-resize items-center justify-center rounded-full border border-ink/25 bg-paper text-ink shadow-lg transition hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stamp ${
+          dragging ? "scale-105 border-stamp text-stamp" : ""
+        }`}
         style={{ left: `${position}%` }}
       >
         <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden>
