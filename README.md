@@ -1,6 +1,6 @@
 # Exhibit F
 
-Single-page Next.js app: upload a photo, get a deliberately cursed **viral courtroom sketch** via **Grok Imagine** (`grok-imagine-image-quality`) on the server. The xAI API key never ships to the browser.
+Single-page Next.js app: upload a photo, get a deliberately cursed **viral courtroom sketch** via **Grok Imagine** (`grok-imagine-image-quality`) on the server. The xAI API key never ships to the browser..
 
 ## Prerequisites
 
