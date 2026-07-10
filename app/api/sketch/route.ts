@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { COURTROOM_SKETCH_PROMPT } from "@/lib/prompt";
+import { COURTROOM_SKETCH_PROMPT, MULTIPLE_DEFENDANTS_PROMPT } from "@/lib/prompt";
 import { fetchImageAsBase64, requestGrokImageEdit } from "@/lib/xai-edits";
 import { validateImageFile } from "@/lib/validate-image";
 
@@ -25,23 +25,27 @@ export async function POST(request: Request) {
     );
   }
 
-  const file = formData.get("file");
-  if (!file || !(file instanceof File)) {
-    return NextResponse.json({ error: "Attach a single image as `file`." }, { status: 400 });
+  const files = formData.getAll("files").filter((item): item is File => item instanceof File);
+  if (files.length < 1 || files.length > 3) {
+    return NextResponse.json({ error: "Attach between one and three images." }, { status: 400 });
   }
 
-  const validation = validateImageFile(file);
-  if (!validation.ok) {
-    return NextResponse.json({ error: validation.message }, { status: 400 });
+  for (const file of files) {
+    const validation = validateImageFile(file);
+    if (!validation.ok) {
+      return NextResponse.json({ error: validation.message }, { status: 400 });
+    }
   }
 
-  const buffer = Buffer.from(await file.arrayBuffer());
-  const imageDataUri = `data:${file.type};base64,${buffer.toString("base64")}`;
+  const imageDataUris = await Promise.all(files.map(async (file) => {
+    const buffer = Buffer.from(await file.arrayBuffer());
+    return `data:${file.type};base64,${buffer.toString("base64")}`;
+  }));
 
   const edit = await requestGrokImageEdit({
     apiKey,
-    prompt: COURTROOM_SKETCH_PROMPT,
-    imageDataUri,
+    prompt: files.length > 1 ? MULTIPLE_DEFENDANTS_PROMPT : COURTROOM_SKETCH_PROMPT,
+    imageDataUris,
   });
 
   if (!edit.ok) {

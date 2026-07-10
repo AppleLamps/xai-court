@@ -16,8 +16,9 @@ function suggestDownloadName(mimeType: string) {
 }
 
 export function ExhibitWorkspace() {
-  const [file, setFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+  const [multipleDefendants, setMultipleDefendants] = useState(false);
   const [resultDataUrl, setResultDataUrl] = useState<string | null>(null);
   const [downloadFileName, setDownloadFileName] = useState("exhibit-f-courtroom-sketch.png");
   const [loading, setLoading] = useState(false);
@@ -27,48 +28,40 @@ export function ExhibitWorkspace() {
   const [viewMode, setViewMode] = useState<ViewMode>("slider");
 
   useEffect(() => {
-    if (!file) {
-      setPreviewUrl(null);
-      return;
-    }
-    const url = URL.createObjectURL(file);
-    setPreviewUrl(url);
-    return () => URL.revokeObjectURL(url);
-  }, [file]);
+    const urls = files.map((file) => URL.createObjectURL(file));
+    setPreviewUrls(urls);
+    return () => urls.forEach((url) => URL.revokeObjectURL(url));
+  }, [files]);
 
-  const handlePickFile = useCallback(async (next: File | null) => {
+  const handlePickFiles = useCallback(async (nextFiles: File[]) => {
     setLocalMessage(null);
     setError(null);
     setResultDataUrl(null);
     setDownloadFileName("exhibit-f-courtroom-sketch.png");
 
-    if (!next) {
+    if (nextFiles.length === 0) {
       setPreparing(false);
-      setFile(null);
+      setFiles([]);
       return;
     }
 
-    if (!isAllowedMimeType(next.type)) {
-      setFile(null);
+    if (nextFiles.some((file) => !isAllowedMimeType(file.type))) {
+      setFiles([]);
       setLocalMessage("Use a JPEG or PNG photo.");
       return;
     }
 
     setPreparing(true);
-    setFile(null);
+    setFiles([]);
 
     try {
-      const budget = getMaxUploadPayloadBytes();
-      const prepared = await prepareImageForUpload(next, budget);
-      const v = validateImageFile(prepared);
-      if (!v.ok) {
-        setFile(null);
-        setLocalMessage(v.message);
-        return;
-      }
-      setFile(prepared);
+      const budget = Math.floor(getMaxUploadPayloadBytes() / nextFiles.length);
+      const prepared = await Promise.all(nextFiles.map((file) => prepareImageForUpload(file, budget)));
+      const invalid = prepared.map(validateImageFile).find((v) => !v.ok);
+      if (invalid && !invalid.ok) { setLocalMessage(invalid.message); return; }
+      setFiles(prepared);
     } catch (e) {
-      setFile(null);
+      setFiles([]);
       const message = e instanceof Error ? e.message : "Could not prepare that image.";
       setLocalMessage(message);
     } finally {
@@ -77,10 +70,9 @@ export function ExhibitWorkspace() {
   }, []);
 
   const generate = useCallback(async () => {
-    if (!file || preparing) return;
-    const v = validateImageFile(file);
-    if (!v.ok) {
-      setLocalMessage(v.message);
+    if (files.length === 0 || preparing) return;
+    if (multipleDefendants && files.length < 2) {
+      setLocalMessage("Upload at least 2 defendant photos in multiple defendants mode.");
       return;
     }
     setLoading(true);
@@ -90,7 +82,7 @@ export function ExhibitWorkspace() {
 
     try {
       const fd = new FormData();
-      fd.set("file", file);
+      files.forEach((file) => fd.append("files", file));
 
       const res = await fetch("/api/sketch", {
         method: "POST",
@@ -116,11 +108,11 @@ export function ExhibitWorkspace() {
     } finally {
       setLoading(false);
     }
-  }, [file, preparing]);
+  }, [files, multipleDefendants, preparing]);
 
   const combinedError = localMessage ?? error;
-  const canGenerate = Boolean(file) && !loading && !preparing;
-  const showComparison = Boolean(resultDataUrl && previewUrl);
+  const canGenerate = files.length >= (multipleDefendants ? 2 : 1) && !loading && !preparing;
+  const showComparison = Boolean(resultDataUrl && previewUrls[0]);
 
   return (
     <ExhibitChrome>
@@ -128,10 +120,10 @@ export function ExhibitWorkspace() {
         <ResultComparison
           viewMode={viewMode}
           onChangeViewMode={setViewMode}
-          originalUrl={previewUrl as string}
+          originalUrl={previewUrls[0] as string}
           resultUrl={resultDataUrl as string}
           downloadFileName={downloadFileName}
-          onUploadFile={handlePickFile}
+          onUploadFile={(file) => handlePickFiles(file ? [file] : [])}
           onRegenerate={generate}
           canRegenerate={canGenerate}
           loading={loading}
@@ -140,7 +132,13 @@ export function ExhibitWorkspace() {
         />
       ) : (
         <div className="grid min-w-0 gap-5 md:grid-cols-2 md:gap-6">
-          <UploadPanel previewUrl={previewUrl} preparing={preparing} onFile={handlePickFile} />
+          <div className="space-y-3">
+            <label className="flex items-center gap-3 rounded-xl border border-margin/70 bg-white/70 px-4 py-3 font-sans text-sm font-semibold text-ink">
+              <input type="checkbox" checked={multipleDefendants} onChange={(e) => { setMultipleDefendants(e.target.checked); setFiles([]); setResultDataUrl(null); setLocalMessage(null); }} />
+              Multiple defendants (upload 2–3 people)
+            </label>
+            <UploadPanel previewUrls={previewUrls} multiple={multipleDefendants} preparing={preparing} onFiles={handlePickFiles} />
+          </div>
           <ResultPanel
             resultDataUrl={resultDataUrl}
             downloadFileName={downloadFileName}
@@ -148,7 +146,7 @@ export function ExhibitWorkspace() {
             error={combinedError}
             onGenerate={generate}
             canGenerate={canGenerate}
-            hasUpload={Boolean(previewUrl)}
+            hasUpload={previewUrls.length > 0}
           />
         </div>
       )}

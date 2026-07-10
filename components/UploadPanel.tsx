@@ -3,12 +3,13 @@
 import { DragEvent, useCallback, useId, useRef, useState } from "react";
 
 type UploadPanelProps = {
-  previewUrl: string | null;
+  previewUrls: string[];
+  multiple: boolean;
   preparing: boolean;
-  onFile: (file: File | null) => void | Promise<void>;
+  onFiles: (files: File[]) => void | Promise<void>;
 };
 
-export function UploadPanel({ previewUrl, preparing, onFile }: UploadPanelProps) {
+export function UploadPanel({ previewUrls, multiple, preparing, onFiles }: UploadPanelProps) {
   const inputId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -23,10 +24,10 @@ export function UploadPanel({ previewUrl, preparing, onFile }: UploadPanelProps)
       e.preventDefault();
       setIsDragging(false);
       if (preparing) return;
-      const file = e.dataTransfer.files?.[0] ?? null;
-      void onFile(file);
+      const files = Array.from(e.dataTransfer.files ?? []).slice(0, multiple ? 3 : 1);
+      void onFiles(files);
     },
-    [onFile, preparing],
+    [multiple, onFiles, preparing],
   );
 
   const handleDragOver = useCallback((e: DragEvent<HTMLDivElement>) => {
@@ -39,7 +40,7 @@ export function UploadPanel({ previewUrl, preparing, onFile }: UploadPanelProps)
     setIsDragging(false);
   }, []);
 
-  const hasImage = Boolean(previewUrl);
+  const hasImage = previewUrls.length > 0;
 
   return (
     <article
@@ -61,7 +62,7 @@ export function UploadPanel({ previewUrl, preparing, onFile }: UploadPanelProps)
       <div
         role="button"
         tabIndex={0}
-        aria-label={hasImage ? "Replace photograph" : "Upload photograph"}
+        aria-label={hasImage ? "Replace photographs" : "Upload photographs"}
         onClick={open}
         onDrop={handleDrop}
         onDragOver={handleDragOver}
@@ -82,12 +83,12 @@ export function UploadPanel({ previewUrl, preparing, onFile }: UploadPanelProps)
       >
         {hasImage ? (
           <>
-            {/* eslint-disable-next-line @next/next/no-img-element -- user upload preview */}
-            <img
-              src={previewUrl ?? undefined}
-              alt="Original uploaded photograph"
-              className="h-full w-full object-contain"
-            />
+            <div className={`grid h-full w-full gap-1 ${previewUrls.length > 1 ? "grid-cols-2" : "grid-cols-1"}`}>
+              {previewUrls.map((url, index) => (
+                // eslint-disable-next-line @next/next/no-img-element -- local user preview
+                <img key={url} src={url} alt={`Uploaded defendant ${index + 1}`} className="h-full min-h-0 w-full object-contain" />
+              ))}
+            </div>
             <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center justify-center bg-gradient-to-t from-ink/65 via-ink/10 to-transparent px-3 pb-3 pt-10 opacity-0 transition group-hover:opacity-100 group-focus-visible:opacity-100">
               <span className="rounded-md bg-paper/95 px-3 py-1.5 font-sans text-xs font-semibold text-ink shadow-sm">
                 Replace photograph
@@ -97,7 +98,7 @@ export function UploadPanel({ previewUrl, preparing, onFile }: UploadPanelProps)
         ) : (
           <div className="flex flex-col items-center gap-2 px-6 text-center">
             <span className="font-serif text-lg font-semibold text-ink">
-              Drop a photograph here
+              {multiple ? "Drop 2 or 3 photographs here" : "Drop a photograph here"}
             </span>
             <span className="font-sans text-xs text-dossier">
               or click to choose. JPEG or PNG, resized in your browser before upload.
@@ -130,11 +131,12 @@ export function UploadPanel({ previewUrl, preparing, onFile }: UploadPanelProps)
         id={inputId}
         name="file"
         type="file"
+        multiple={multiple}
         accept="image/jpeg,image/png"
         disabled={preparing}
         className="sr-only"
         onChange={(e) => {
-          void onFile(e.target.files?.[0] ?? null);
+          void onFiles(Array.from(e.target.files ?? []).slice(0, multiple ? 3 : 1));
           e.target.value = "";
         }}
       />

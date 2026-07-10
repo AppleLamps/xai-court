@@ -34,7 +34,7 @@ export type GrokEditResult =
 export async function requestGrokImageEdit(input: {
   apiKey: string;
   prompt: string;
-  imageDataUri: string;
+  imageDataUris: string[];
 }): Promise<GrokEditResult> {
   const res = await fetch(XAI_EDITS_URL, {
     method: "POST",
@@ -45,10 +45,9 @@ export async function requestGrokImageEdit(input: {
     body: JSON.stringify({
       model: "grok-imagine-image-quality",
       prompt: input.prompt,
-      image: {
-        url: input.imageDataUri,
-        type: "image_url",
-      },
+      ...(input.imageDataUris.length === 1
+        ? { image: { url: input.imageDataUris[0], type: "image_url" } }
+        : { images: input.imageDataUris.map((url) => ({ url, type: "image_url" })) }),
     }),
   });
 
