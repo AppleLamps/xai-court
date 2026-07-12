@@ -133,11 +133,23 @@ export function ExhibitWorkspace() {
       ) : (
         <div className="grid min-w-0 gap-5 md:grid-cols-2 md:gap-6">
           <div className="space-y-3">
-            <label className="flex items-center gap-3 rounded-xl border border-margin/70 bg-white/70 px-4 py-3 font-sans text-sm font-semibold text-ink">
-              <input type="checkbox" checked={multipleDefendants} onChange={(e) => { setMultipleDefendants(e.target.checked); setFiles([]); setResultDataUrl(null); setLocalMessage(null); }} />
+            <label className={`flex items-center gap-3 rounded-xl border border-margin/70 bg-white/70 px-4 py-3 font-sans text-sm font-semibold text-ink shadow-sm transition hover:border-washblue/60 has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-stamp ${loading ? "cursor-not-allowed opacity-70" : "cursor-pointer"}`}>
+              <input
+                type="checkbox"
+                checked={multipleDefendants}
+                disabled={loading}
+                onChange={(e) => { setMultipleDefendants(e.target.checked); setFiles([]); setResultDataUrl(null); setLocalMessage(null); }}
+                className={`size-4 shrink-0 accent-stamp ${loading ? "cursor-not-allowed" : "cursor-pointer"}`}
+              />
               Multiple defendants (upload 2–3 people)
             </label>
-            <UploadPanel previewUrls={previewUrls} multiple={multipleDefendants} preparing={preparing} onFiles={handlePickFiles} />
+            <UploadPanel
+              previewUrls={previewUrls}
+              multiple={multipleDefendants}
+              preparing={preparing}
+              locked={loading}
+              onFiles={handlePickFiles}
+            />
           </div>
           <ResultPanel
             resultDataUrl={resultDataUrl}

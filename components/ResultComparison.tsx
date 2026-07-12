@@ -117,7 +117,13 @@ export function ResultComparison({
         <div className="space-y-4">
           <CaseFileStrip mode={viewMode} />
           <div className="grid min-w-0 gap-5 md:grid-cols-2 md:gap-6">
-            <UploadPanel previewUrls={[originalUrl]} multiple={false} preparing={preparing} onFiles={(files) => onUploadFile(files[0] ?? null)} />
+            <UploadPanel
+              previewUrls={[originalUrl]}
+              multiple={false}
+              preparing={preparing}
+              locked={loading}
+              onFiles={(files) => onUploadFile(files[0] ?? null)}
+            />
             <ResultPanel
               resultDataUrl={resultUrl}
               downloadFileName={downloadFileName}
