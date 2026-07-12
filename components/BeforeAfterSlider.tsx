@@ -98,7 +98,7 @@ export function BeforeAfterSlider({
         />
       </div>
 
-      <span className="pointer-events-none absolute left-3 top-3 rounded-md bg-paper/95 px-2 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-washblue shadow-sm">
+      <span className="pointer-events-none absolute left-3 top-3 rounded-md bg-paper/95 px-2 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-dossier shadow-sm">
         {beforeLabel}
       </span>
       <span className="pointer-events-none absolute right-3 top-3 rounded-md bg-paper/95 px-2 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-stamp shadow-sm">
