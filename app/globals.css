@@ -40,4 +40,32 @@ body {
     );
     background-size: 100% 0.75rem;
   }
+
+  .fade-rise {
+    animation: fade-rise 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .fade-rise-delay {
+    animation: fade-rise 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.08s both;
+  }
+}
+
+@keyframes fade-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fade-rise,
+  .fade-rise-delay,
+  .animate-pulse,
+  .animate-spin {
+    animation: none !important;
+  }
 }

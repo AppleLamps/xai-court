@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useId, useState } from "react";
 import { ExhibitChrome } from "@/components/ExhibitChrome";
 import { ResultComparison, type ViewMode } from "@/components/ResultComparison";
 import { ResultPanel } from "@/components/ResultPanel";
@@ -16,6 +16,7 @@ function suggestDownloadName(mimeType: string) {
 }
 
 export function ExhibitWorkspace() {
+  const defendantModeId = useId();
   const [files, setFiles] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [multipleDefendants, setMultipleDefendants] = useState(false);
@@ -131,18 +132,32 @@ export function ExhibitWorkspace() {
           error={combinedError}
         />
       ) : (
-        <div className="grid min-w-0 gap-5 md:grid-cols-2 md:gap-6">
-          <div className="space-y-3">
-            <label className={`flex items-center gap-3 rounded-xl border border-margin/70 bg-white/70 px-4 py-3 font-sans text-sm font-semibold text-ink shadow-sm transition hover:border-washblue/60 has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-stamp ${loading ? "cursor-not-allowed opacity-70" : "cursor-pointer"}`}>
-              <input
-                type="checkbox"
-                checked={multipleDefendants}
-                disabled={loading}
-                onChange={(e) => { setMultipleDefendants(e.target.checked); setFiles([]); setResultDataUrl(null); setLocalMessage(null); }}
-                className={`size-4 shrink-0 accent-stamp ${loading ? "cursor-not-allowed" : "cursor-pointer"}`}
-              />
-              Multiple defendants (upload 2–3 people)
-            </label>
+        <div className="space-y-4">
+          <div className="fade-rise flex flex-wrap items-center justify-between gap-3 rounded-xl border border-margin/70 bg-white/60 px-3 py-2 shadow-sm">
+            <div>
+              <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-stamp">
+                Case intake
+              </p>
+              <p className="mt-0.5 font-sans text-xs text-dossier">
+                {multipleDefendants
+                  ? "Multiple defendants — upload 2 to 3 photographs."
+                  : "Single defendant — upload one photograph."}
+              </p>
+            </div>
+            <DefendantModeToggle
+              name={defendantModeId}
+              multiple={multipleDefendants}
+              disabled={loading}
+              onChange={(value) => {
+                setMultipleDefendants(value);
+                setFiles([]);
+                setResultDataUrl(null);
+                setLocalMessage(null);
+              }}
+            />
+          </div>
+
+          <div className="fade-rise-delay relative grid min-w-0 gap-5 md:grid-cols-2 md:items-stretch md:gap-6">
             <UploadPanel
               previewUrls={previewUrls}
               multiple={multipleDefendants}
@@ -150,18 +165,81 @@ export function ExhibitWorkspace() {
               locked={loading}
               onFiles={handlePickFiles}
             />
+            <ResultPanel
+              resultDataUrl={resultDataUrl}
+              downloadFileName={downloadFileName}
+              loading={loading}
+              error={combinedError}
+              onGenerate={generate}
+              canGenerate={canGenerate}
+              hasUpload={previewUrls.length > 0}
+            />
+            <div
+              aria-hidden
+              className="pointer-events-none absolute left-1/2 top-1/2 z-10 hidden -translate-x-1/2 -translate-y-1/2 md:flex"
+            >
+              <span className="flex size-9 items-center justify-center rounded-full border border-margin/70 bg-paper shadow-dossier">
+                <svg viewBox="0 0 24 24" fill="none" className="size-4 text-stamp">
+                  <path
+                    d="M5 12h14m0 0-5-5m5 5-5 5"
+                    stroke="currentColor"
+                    strokeWidth="1.75"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </span>
+            </div>
           </div>
-          <ResultPanel
-            resultDataUrl={resultDataUrl}
-            downloadFileName={downloadFileName}
-            loading={loading}
-            error={combinedError}
-            onGenerate={generate}
-            canGenerate={canGenerate}
-            hasUpload={previewUrls.length > 0}
-          />
         </div>
       )}
     </ExhibitChrome>
+  );
+}
+
+function DefendantModeToggle({
+  name,
+  multiple,
+  disabled,
+  onChange,
+}: {
+  name: string;
+  multiple: boolean;
+  disabled?: boolean;
+  onChange: (multiple: boolean) => void;
+}) {
+  const options = [
+    { value: false, label: "Solo" },
+    { value: true, label: "Multiple (2–3)" },
+  ] as const;
+
+  return (
+    <div
+      role="radiogroup"
+      aria-label="Number of defendants"
+      className={`inline-flex items-center gap-1 rounded-lg border border-margin/70 bg-white/80 p-1 font-sans text-xs shadow-sm ${disabled ? "opacity-60" : ""}`}
+    >
+      {options.map((opt) => {
+        const active = multiple === opt.value;
+        return (
+          <label
+            key={String(opt.value)}
+            className={`rounded-md px-3 py-1.5 font-semibold transition focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-stamp ${
+              disabled ? "cursor-not-allowed" : "cursor-pointer"
+            } ${active ? "bg-ink text-paper shadow-sm" : "text-dossier hover:bg-paper/70 hover:text-ink"}`}
+          >
+            <input
+              type="radio"
+              name={name}
+              disabled={disabled}
+              checked={active}
+              onChange={() => onChange(opt.value)}
+              className="sr-only"
+            />
+            {opt.label}
+          </label>
+        );
+      })}
+    </div>
   );
 }

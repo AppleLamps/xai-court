@@ -57,7 +57,11 @@ export function UploadPanel({ previewUrls, multiple, preparing, locked = false, 
         >
           Exhibit A
         </h3>
-        <span className="rounded-md bg-paper px-2 py-0.5 font-mono text-[10px] text-dossier">
+        <span className="inline-flex items-center gap-1.5 rounded-md bg-paper px-2 py-0.5 font-mono text-[10px] text-dossier">
+          <span
+            aria-hidden
+            className={`size-1.5 rounded-full ${hasImage ? "bg-washblue" : "animate-pulse bg-margin"}`}
+          />
           {hasImage ? "ORIGINAL" : "AWAITING UPLOAD"}
         </span>
       </div>
@@ -113,6 +117,18 @@ export function UploadPanel({ previewUrls, multiple, preparing, locked = false, 
           </>
         ) : (
           <div className="flex flex-col items-center gap-2 px-6 text-center">
+            <span className="mb-1 flex size-12 items-center justify-center rounded-full border border-margin/60 bg-paper text-margin transition group-hover:border-washblue/60 group-hover:text-washblue">
+              <svg viewBox="0 0 24 24" fill="none" className="size-6">
+                <path
+                  d="M4 8.5A1.5 1.5 0 0 1 5.5 7h2.19a1.5 1.5 0 0 0 1.28-.72l.62-1.02A1.5 1.5 0 0 1 10.87 4.5h2.26a1.5 1.5 0 0 1 1.28.72l.62 1.06A1.5 1.5 0 0 0 16.31 7H18.5A1.5 1.5 0 0 1 20 8.5v9A1.5 1.5 0 0 1 18.5 19h-13A1.5 1.5 0 0 1 4 17.5v-9Z"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <circle cx="12" cy="13" r="3.25" stroke="currentColor" strokeWidth="1.5" />
+              </svg>
+            </span>
             <span className="font-serif text-lg font-semibold text-ink">
               {multiple ? "Drop 2 or 3 photographs here" : "Drop a photograph here"}
             </span>

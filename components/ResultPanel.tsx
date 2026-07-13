@@ -47,7 +47,11 @@ export function ResultPanel({
         <h3 className="font-sans text-xs font-bold uppercase tracking-[0.2em] text-dossier">
           Exhibit F
         </h3>
-        <span className="rounded-md bg-paper px-2 py-0.5 font-mono text-[10px] text-stamp">
+        <span className="inline-flex items-center gap-1.5 rounded-md bg-paper px-2 py-0.5 font-mono text-[10px] text-stamp">
+          <span
+            aria-hidden
+            className={`size-1.5 rounded-full ${showResult ? "bg-stamp" : loading ? "animate-pulse bg-stamp" : "bg-margin"}`}
+          />
           {showResult ? "SKETCH" : loading ? LOADING_STEPS[loadingStep] : "PENDING"}
         </span>
       </div>
@@ -75,6 +79,17 @@ export function ResultPanel({
           </div>
         ) : (
           <div className="flex flex-col items-center gap-4 px-6 text-center">
+            <span className="flex size-12 items-center justify-center rounded-full border border-margin/60 bg-paper text-margin">
+              <svg viewBox="0 0 24 24" fill="none" className="size-6">
+                <path
+                  d="m16.5 4.5 3 3L8 19l-4 1 1-4Z"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </span>
             <p className="font-sans text-xs text-dossier">
               {hasUpload
                 ? "Ready when you are."
